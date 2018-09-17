@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<title>IOT Code Editor</title>
+	<script type="text/javascript">
+	var oArea = document.getElementById("idCode");
+	var file = new XMLHttpRequest();
+	file.open("GET","/Code.txt",true);
+	file.send();
+	
+	file.onreadystatechange = function(){
+		if(file.readyState == 4 && file.status == 200){
+			document.getElementById("idCode").innerHTML = file.responseText;
+		}
+	}
+	
+	var decodeHtmlEntity = function(str) {
+		return str.replace(/&#(\d+);/g, function(match, dec) {
+			return String.fromCharCode(dec);
+		});
+	};
+	
+	function codeUpload(){
+		var fileContent = decodeHtmlEntity(document.getElementById("idCode").value.toString());
+		console.log("Inhalt: " + fileContent);
+		var f = new File([fileContent], "Code.txt", {type: "text/plain"});
+		var formData = new FormData();
+		formData.append("file", f);
+		
+		var req = new XMLHttpRequest();
+		req.open("POST","/",true);
+		req.send(formData);
+
+	}
+	</script>
+</head>
+<body>
+	<label>Codefile</label>
+	</br>
+	<textarea name="code" id="idCode">Enter Code her</textarea>
+	</br>
+	<button onclick="codeUpload()">Upload Code</button>
+</body>
+</html>

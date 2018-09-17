@@ -1,0 +1,9 @@
+{
+	"Mesh":{
+		"SSID":"CabreraMesh",
+		"Pass":"ILoveMyMesh",
+		"Channel":11,
+		"Port":5555
+	},
+	"Hostname":"Nummer2"
+}
