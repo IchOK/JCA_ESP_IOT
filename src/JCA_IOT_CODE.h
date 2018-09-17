@@ -16,29 +16,29 @@
 			[Ziel]
 				Sprungadresse
 			$CODE_END
-			
+
  * Version:
  * 	V1.0.0	Erstellt	20.05.2018	JCA
  *		-analyseIOs
  *		-analyseCode
  *		-doCode
  **********************************************/
- 
+
 #ifndef _JCA_IOT_CODE_H
 #define _JCA_IOT_CODE_H
 
-#include <JCA_IOT_QC.h>
-#include <JCA_IOT_CODELINE.h>
-#include <JCA_IOT_JUMP.h>
+#include "JCA_IOT_QC.h"
+#include "JCA_IOT_CODELINE.h"
+#include "JCA_IOT_JUMP.h"
 //#include <JCA_IOT_IO_All.h>
-#include <JCA_IOT_IO.h>
-#include <JCA_IOT_IO_DO.h>
-#include <JCA_IOT_IO_DI.h>
-#include <JCA_IOT_IO_AO.h>
-#include <JCA_IOT_IO_AI.h>
-#include <JCA_IOT_IO_Bool.h>
-#include <JCA_IOT_IO_Long.h>
-#include <JCA_IOT_IO_Float.h>
+#include "JCA_IOT_IO.h"
+#include "JCA_IOT_IO_DO.h"
+#include "JCA_IOT_IO_DI.h"
+#include "JCA_IOT_IO_AO.h"
+#include "JCA_IOT_IO_AI.h"
+#include "JCA_IOT_IO_Bool.h"
+#include "JCA_IOT_IO_Long.h"
+#include "JCA_IOT_IO_Float.h"
 
 #define JCA_IOT_CODE_IO_NOTFOUND	-1
 #define JCA_IOT_CODE_IO_OK			0
@@ -65,7 +65,7 @@
 #define JCA_IOT_CODE_CMD_AN			103 //"AN"		VKE[n] = VKE[n] UND NICHT Variable (Init[n] : VKE[n] = 1, Init[n] = 0)
 #define JCA_IOT_CODE_CMD_ON			104 //"ON"		VKE[n] = VKE[n] ODER NICHT Variable (Init[n] : VKE[n] = 0, Init[n] = 0)
 #define JCA_IOT_CODE_CMD_Z			151 //"="		Variable = VKE[n], Init[n] = 1
-#define JCA_IOT_CODE_CMD_S			152 //"S"		WENN VKE[n] == 1 : Variable = 1 
+#define JCA_IOT_CODE_CMD_S			152 //"S"		WENN VKE[n] == 1 : Variable = 1
 #define JCA_IOT_CODE_CMD_R			153 //"R"		WENN VKE[n] == 1 : Variable = 0
 
 #define JCA_IOT_CODE_CMD_L_L		201	//"LL"		AkkuL = Variable
@@ -103,7 +103,7 @@
 #define JCA_IOT_CODE_VECTOR_LONG	3
 #define JCA_IOT_CODE_VECTOR_FLOAT	4
 #define JCA_IOT_CODE_VECTOR_JMP		5
-		
+
 
 
 #define JCA_IOT_CODE_NAMELEN		30
@@ -135,7 +135,7 @@ class cCode {
 		int getFaultCode();
 		int findIO(char* strName);
 
-		
+
 	protected:
 		void addIO(std::vector<char*> vPar, int iType);
 		void updateIO(std::vector<char*> vPar, int iType, int iIndex);
@@ -145,9 +145,9 @@ class cCode {
 		int insertCode(char* strLine);
 		bool getFunctionCode(char* strFunc, int* iFunc, int* iMinLen);
 		bool getValueCode(char* strValue, int iFunc, int* iType, int* iPos);
-		
+
 		std::vector<IO::cRoot*> IOs;	//Vector alles im IO-Bereich definierten IOs
-		
+
 		std::vector<bool> boolConst;			//Vector der Konstanten aus dem Code-Bereich Bool
 		std::vector<int32_t> longConst;			//Vector der Konstanten aus dem Code-Bereich int32_t
 		std::vector<float> floatConst;			//Vector der Konstanten aus dem Code-Bereich Float
@@ -155,13 +155,13 @@ class cCode {
 		//Jmp-Vectoren werden während der Codeanalyse gefüllt um danach die entsprechende Codezeile zu verknüpfen
 		std::vector<cJump*> JmpLine; 			//temporärer Vector als Zwischenspeicher für Sprungzeilen
 		std::vector<cJump*> JmpDest; 			//temporärer Vector der alle Sprungziele enthält
-		
+
 		//Datenpunkt zur Initialisierung des Codeinterpreter
 		bool areaIO;
 		bool areaCode;
 		int  faultIO;
 		int  faultCode;
-		
+
 		//Datenpunkte zur Code verarbeitung
 		bool VKE[32];		//Logisches Verknüpfungsergebniss, durch Klammern maximale 32 Ebenen erreicht werden
 		bool Init[32];		//Initalisierung der Verknüpfungsebene (1:Verknpüfung wird neu gebildet)

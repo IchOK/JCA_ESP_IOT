@@ -1,23 +1,24 @@
 /**********************************************
- * Class:	JMZ_IOT_IO_AI
- * Info: 	Die Klasse erstellt einen digitalen
- *				Ausgang für einen OnBoard Pin.
+ * Class:	JMZ_IOT_IO_Bool
+ * Info: 	Die Klasse stellt einen statischen
+ *				Real-Wert zur verfügung der als
+ *				IO als Speicher oder Parameter
+ *				verwendet werden kann.
  * Version:
  * 	V1.0.0	Erstellt	22.05.2018	JCA
  *		-get/set Float/Time/int32_t/Bool/Date
  **********************************************/
- 
-#include <JCA_IOT_IO.h>
 
-#ifndef _JCA_IOT_IO_AI_H
-#define _JCA_IOT_IO_AI_H
+#include "JCA_IOT_IO.h"
+
+#ifndef _JCA_IOT_IO_BOOL_H
+#define _JCA_IOT_IO_BOOL_H
 namespace JCA{ namespace IOT{ namespace IO{
-class cAI : public cRoot{
+class cBool : public cRoot{
 	public:
-		cAI(const char* strName, int iPort, float fMin, float fMax, float fValue);
-		cAI(const char* strName, int iPort, float fMin, float fMax);
+		cBool(const char* strName, bool bValue);
+		cBool(const char* strName);
 
-		virtual void  update();
 		virtual void  setString(char* strValue);
 		virtual char* getString(char* strValue);
 		virtual void  setFloat(float Value);
@@ -30,12 +31,9 @@ class cAI : public cRoot{
 		virtual bool  getBool();
 		virtual void  setDate(int32_t Value);
 		virtual int32_t  getDate();
-		
+
 	protected:
-		float Value;
-		float Min;
-		float Max;
-		int Port;
+		bool Value;
 };
 }}}
 

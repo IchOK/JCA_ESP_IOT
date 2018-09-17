@@ -6,7 +6,7 @@
  * 	V1.0.0	Erstellt	24.05.2018	JCA
  *		-get/set
  **********************************************/
- 
+
 #ifndef _JCA_IOT_JUMP_H
 #define _JCA_IOT_JUMP_H
 
@@ -15,8 +15,8 @@ namespace JCA{ namespace IOT{
 class cJump {
 	public:
 		cJump(int iPos, char* strName);
-		
-		int		Pos;
+
+		int		pos;
 		char	Name[30];
 };
 }}

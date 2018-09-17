@@ -9,7 +9,7 @@ using namespace JCA::IOT::MESH;
 /**********************************************
  * Methode: Constructor()
  * Info:	Initialisierung der statischen Werte
- * Param:	
+ * Param:
  * Version:
  *	V1.0.0	Erstellt	14.09.2018	JCA
  **********************************************/
@@ -17,13 +17,13 @@ cTag::cTag(char* strTag, int iSetTime, int iIndex, bool bRecv){
 	#ifdef _DEBUG_ON
 		Serial.print("cTag::cTag");
 	#endif
-	strncpy(this->Name, strTag, 30);
+	strncpy(this->name, strTag, 30);
 	this->ioIndex = iIndex;
-	this->SetTime = 1000000 * (uint32_t)iSetTime;
-	this->Recv = bRecv;
-	this->Count = 0;
-	this->Found = false;
-	this->Linked = false;
+	this->setTime = 1000000 * (uint32_t)iSetTime;
+	this->recv = bRecv;
+	this->count = 0;
+	this->found = false;
+	this->linked = false;
 	#ifdef _DEBUG_ON
 		Serial.print(" Name:");
 		Serial.print(strName);
@@ -35,4 +35,3 @@ cTag::cTag(char* strTag, int iSetTime, int iIndex, bool bRecv){
 		Serial.println(bRecv);
 	#endif
 }
-

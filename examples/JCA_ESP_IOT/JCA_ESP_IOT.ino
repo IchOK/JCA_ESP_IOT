@@ -1,10 +1,10 @@
 #define _DEBUG_ON
 
-#include "IPAddress.h"
-#include "painlessMesh.h"
+#include <IPAddress.h>
+#include <painlessMesh.h>
 
 #ifdef ESP8266
-#include "Hash.h"
+#include <Hash.h>
 #include <ESPAsyncTCP.h>
 #else
 #include <AsyncTCP.h>
@@ -16,8 +16,8 @@
 #define CODE_FILE "/Code.txt"
 #define CONFIG_FILE "/Config.json"
 
-#include <JCA_IOT_IO_All.h>
-#include <JCA_IOT_CODE.h>
+#include "JCA_IOT_IO_All.h"
+#include "JCA_IOT_CODE.h"
 
 using namespace JCA::IOT;
 

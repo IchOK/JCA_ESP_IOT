@@ -1,0 +1,38 @@
+$IO
+//DO;OnBoardLED;1;1//OnBoard LED, Startwert[3] 1
+DI;TankNichtLeer;14;1;0//Tank-Leermeldung (0=Leer), Pin[2] 14(D5), Mit Pullup[2}, Startwert[4] 0
+DI;TankNichtVoll;5;1;0//Tank-Vollmeldung (0=Voll)
+DI;RequestIntern;4;1;0//Anforderung zum Pumpen
+DO;PumpeEin;16;0//Pumpe einschalten
+DO;LedRefill;13;1//Blaue-Led, Anforderung Wasser nachfüllen
+DO;LedEmpty;14;0//Rote-Led, Anforderung zum Schmutzwasser ablassen
+DO;LedRun;12;0;//Grüne-Led, Anzeige das die Pumpe läuft
+//MeshDI;RequestExtern;0//Externe Anforderung zum Pumpen
+Bool;Request;0
+Long;DelayReq;400
+Long;DelayVoll;2000
+Long;DelayLeer;2000
+$IO_END
+$CODE
+//A {RequestIntern}
+////O {RequestExtern}
+//S {PumpeEin}
+//AN {TankNichtVoll}
+//ON {TankNichtLeer}
+//R {PumpeEin}
+A {RequestIntern}
+AN {Request}
+A {LedRefill}
+R {LedRefill}
+S {LedEmpty}
+A {RequestIntern}
+AN {Request}
+A {LedEmpty}
+R {LedEmpty}
+S {LedRun}
+A {RequestIntern}
+AN {Request}
+A {LedRun}
+R {LedRun}
+S {LedRefill}
+$CODE_END

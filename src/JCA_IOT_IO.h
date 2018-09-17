@@ -1,7 +1,7 @@
 /**********************************************
  * Class:	JMZ_IOT_IO
  * Info: 	Die Klasse beinhaltet alle Grundfunktionen
- *				der IOT-IO's und dient als Ursprung 
+ *				der IOT-IO's und dient als Ursprung
  *				aller weiternen Klassen
  * Version:
  * 	V1.0.0	Erstellt	19.05.2018	JCA
@@ -11,11 +11,11 @@
  *		-GetName
  *		-get/set Float/Time/int32_t/Bool/Date
  **********************************************/
- 
+
 #ifndef _JCA_IOT_IO_H
 #define _JCA_IOT_IO_H
 
-#include <JCA_IOT_QC.h>
+#include "JCA_IOT_QC.h"
 //Type-Kennungen der IOs
 #define JCA_IOT_IO_T_ROOT		0
 #define JCA_IOT_IO_T_LONG		1
@@ -36,7 +36,7 @@
 #define JCA_IOT_IO_L_AI			5
 
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include <string.h>
 namespace JCA{ namespace IOT{ namespace IO{
 class cRoot {
@@ -61,7 +61,7 @@ class cRoot {
 		virtual bool  getBool();
 		virtual void  setDate(int32_t Value);
 		virtual int32_t  getDate();
-		
+
 	protected:
 		char Name[30];
 		int Type;
