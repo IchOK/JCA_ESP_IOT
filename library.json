@@ -4,7 +4,7 @@
   "description": "IOT Device with simple txt-logic-interpreter, Mesh based",
   "repository": {
     "type": "git",
-    "url": "https://github.com/IchOK/JCA_ESP_IOT.git"
+    "url": "https://github.com/IchOK/JCA_IOT.git"
   },
   "version": "1.0.0",
   "authors": {
