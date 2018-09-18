@@ -9,7 +9,7 @@ using namespace JCA::IOT;
 /**********************************************
  * Methode: Constructor()
  * Info:	Initialisierung der statischen Werte
- * Param:	
+ * Param:
  * Version:
  *	V1.0.0	Erstellt	20.05.2018	JCA
  **********************************************/
@@ -25,8 +25,8 @@ cCode::cCode(){
  * Info:	stellt die internen Datenpunkt so
  *				ein dass die Codeauswertung
  *				neu begonnen wird
- * Param:	
- * Return:	
+ * Param:
+ * Return:
  * Version:
  *	V1.0.0	Erstellt	20.05.2018	JCA
  **********************************************/
@@ -49,7 +49,7 @@ void cCode::setStart(){
  * Version:
  *	V1.0.0	Erstellt	21.05.2018	JCA
  **********************************************/
-bool cCode::pharseFile(File* file){
+bool cCode::pharseFile(File* file, std::function<void(char*, char*, int, int, char)> xAddToList){
 	#ifdef _DEBUG_ON
 		Serial.println("cCode::pharseFile");
 	#endif
@@ -67,6 +67,7 @@ bool cCode::pharseFile(File* file){
 			#endif
 			this->analyseIOs(strLine);
 			this->analyseCode(strLine);
+			this->analyseMesh(strLine, xAddToList);
 		}
 	}
 	#ifdef _DEBUG_ON
@@ -94,7 +95,7 @@ char* cCode::analyseIOs(char* strLine){
 	bool analyse = false;
 	int lineIO = JCA_IOT_CODE_IO_OK;
 	char* komment;
-	
+
 	komment = strstr(strLine, "//");
 	if(komment != NULL){
 		*komment = 0;
@@ -127,7 +128,7 @@ char* cCode::analyseIOs(char* strLine){
 				this->areaIO = true;
 			}
 		}
-		
+
 	}
 	switch(lineIO){
 		case JCA_IOT_CODE_IO_UNKNOWN :
@@ -164,7 +165,7 @@ char* cCode::analyseCode(char* strLine){
 	bool analyse = false;
 	int lineIO = JCA_IOT_CODE_CMD_OK;
 	char* komment;
-	
+
 	komment = strstr(strLine, "//");
 	if(komment != NULL){
 		*komment = 0;
@@ -197,7 +198,7 @@ char* cCode::analyseCode(char* strLine){
 				this->areaCode = true;
 			}
 		}
-		
+
 	}
 	switch(lineIO){
 		case JCA_IOT_CODE_CMD_UNKNOWN :
@@ -232,15 +233,90 @@ char* cCode::analyseCode(char* strLine){
  * Version:
  *	V1.0.0	Erstellt	17.09.2018	JCA
  **********************************************/
-char* cCode::analyseMesh(char* strLine){
-	;
+char* cCode::analyseMesh(char* strLine, std::function<void(char*, char*, int, int, char)> xAddToList){
+	#ifdef _DEBUG_ON
+		Serial.println("cCode::analyseMesh");
+	#endif
+	bool analyse = false;
+	int lineIO = JCA_IOT_CODE_IO_OK;
+	char* komment;
+	std::vector<char*> Par;
+	char* tokken;
+	int iIndex;
+
+	komment = strstr(strLine, "//");
+	if(komment != NULL){
+		*komment = 0;
+		komment++;
+		komment++;
+		#ifdef _DEBUG_ON
+			Serial.print("cCode::analyseMesh - Komment: ");
+			Serial.println(komment);
+		#endif
+	}
+	if(strlen(strLine) > 1){
+		//Code befindet sich im IO-Bereich -> auf Ende prüfen
+		if(this->areaMesh){
+			if(strstr(strLine,"$MESH_END")){
+				#ifdef _DEBUG_ON
+					Serial.println("cCode::analyseMesh - Mesh-Ende");
+				#endif
+				this->areaMesh = false;
+			}else{
+				#ifdef _DEBUG_ON
+					Serial.println("cCode::analyseMesh - Mesh-Zeile");
+				#endif
+				//Char* aufsplitten
+				tokken = strtok(strLine, ";");
+				while(tokken != NULL){
+					Par.push_back(tokken);
+					tokken = strtok(NULL, ";");
+				}
+				if(Par.size() >= 5){
+					iIndex = this->findIO(Par[2]);
+					if(iIndex >= 0){
+						xAddToList(Par[0], Par[1], atoi(Par[3]), iIndex, *Par[4]);
+					}else{
+						lineIO = JCA_IOT_CODE_IO_NOTFOUND;
+					}
+				}else{
+					lineIO = JCA_IOT_CODE_IO_MINPAR;
+				}
+
+
+				lineIO = this->insertIO(strLine);
+			}
+		}else{
+			if(strstr(strLine,"$MESH")){
+				#ifdef _DEBUG_ON
+					Serial.println("cCode::analyseMesh - Mesh-Start");
+				#endif
+				this->areaMesh = true;
+			}
+		}
+
+	}
+	switch(lineIO){
+		case JCA_IOT_CODE_IO_NOTFOUND :
+			return "IO zum Mesh nicht gefunden";
+			break;
+		case JCA_IOT_CODE_IO_MINPAR :
+			return "Mesh Parameter nicht ausreichend";
+			break;
+		case JCA_IOT_CODE_IO_OK :
+			return NULL;
+			break;
+		default :
+			return "Mesh Unbekannter Fehler";
+			break;
+	}
 }
 
 /**********************************************
  * Methode: doIOs()
  * Info:	bearbeitet den IO-Vector
- * Param:	
- * Return:	
+ * Param:
+ * Return:
  *		int  = erste fehlerhafte Zeile
  * Version:
  *	V1.0.0	Erstellt	21.05.2018	JCA
@@ -264,10 +340,10 @@ int cCode::doIOs(){
  * Methode: doCode(ulMicros)
  * Info:	bearbeitet den Code-Vector
  * Param:	ulMicros : Microsekunden Umlaufzähler
- * Return:	
+ * Return:
  *		int  = erste fehlerhafte Zeile
  * Version:
- *	V1.0.0	Erstellt	
+ *	V1.0.0	Erstellt
  **********************************************/
 int cCode::doCode(uint32_t ulMicros){
 	#ifdef _DEBUG_ON
@@ -281,9 +357,9 @@ int cCode::doCode(uint32_t ulMicros){
 	int n=0;
 	int i;
 	int iFunc;
-	
+
 	this->Init[0] = true;
-	
+
 	for(i=0;i<this->Code.size();i++){
 		iFunc = this->Code[i]->function;
 		#ifdef _DEBUG_ON
@@ -292,7 +368,7 @@ int cCode::doCode(uint32_t ulMicros){
 			Serial.print(" Function:");
 			Serial.print(iFunc);
 		#endif
-		
+
 		if(iFunc > 100 && iFunc < 150){	//Bool-Funktion lesend
 			if(this->Code[i]->type == JCA_IOT_CODE_VECTOR_IO){
 				#ifdef _DEBUG_ON
@@ -360,17 +436,17 @@ int cCode::doCode(uint32_t ulMicros){
 				this->function[n] = JCA_IOT_CODE_CMD_A;
 				this->Init[n] = true;
 				break;
-			case JCA_IOT_CODE_CMD_OK	: 
+			case JCA_IOT_CODE_CMD_OK	:
 				n++;
 				this->function[n] = JCA_IOT_CODE_CMD_O;
 				this->Init[n] = true;
 				break;
-			case JCA_IOT_CODE_CMD_ANK	: 
+			case JCA_IOT_CODE_CMD_ANK	:
 				n++;
 				this->function[n] = JCA_IOT_CODE_CMD_AN;
 				this->Init[n] = true;
 				break;
-			case JCA_IOT_CODE_CMD_ONK	: 
+			case JCA_IOT_CODE_CMD_ONK	:
 				n++;
 				this->function[n] = JCA_IOT_CODE_CMD_ON;
 				this->Init[n] = true;
@@ -404,33 +480,33 @@ int cCode::doCode(uint32_t ulMicros){
 				break;
 			case JCA_IOT_CODE_CMD_N		:
 				if(this->Init[n]){this->VKE[n]=true;this->Init[n]=false;}
-				this->VKE[n] = !this->VKE[n]; 
+				this->VKE[n] = !this->VKE[n];
 				break;
-			case JCA_IOT_CODE_CMD_A		: 
+			case JCA_IOT_CODE_CMD_A		:
 				if(this->Init[n]){this->VKE[n]=true;this->Init[n]=false;}
-				this->VKE[n] = this->VKE[n] && bValue; 
+				this->VKE[n] = this->VKE[n] && bValue;
 				#ifdef _DEBUG_ON
 					Serial.print(" VKE:");
 					Serial.println(VKE[n]);
 				#endif
 				break;
-			case JCA_IOT_CODE_CMD_O		: 
+			case JCA_IOT_CODE_CMD_O		:
 				if(this->Init[n]){this->VKE[n]=false;this->Init[n]=false;}
-				this->VKE[n] = this->VKE[n] || bValue; 
+				this->VKE[n] = this->VKE[n] || bValue;
 				break;
-			case JCA_IOT_CODE_CMD_AN	: 
+			case JCA_IOT_CODE_CMD_AN	:
 				if(this->Init[n]){this->VKE[n]=true;this->Init[n]=false;}
-				this->VKE[n] = this->VKE[n] && !bValue; 
+				this->VKE[n] = this->VKE[n] && !bValue;
 				#ifdef _DEBUG_ON
 					Serial.print(" VKE:");
 					Serial.println(VKE[n]);
 				#endif
 				break;
-			case JCA_IOT_CODE_CMD_ON	: 
+			case JCA_IOT_CODE_CMD_ON	:
 				if(this->Init[n]){this->VKE[n]=false;this->Init[n]=false;}
-				this->VKE[n] = this->VKE[n] || !bValue; 
+				this->VKE[n] = this->VKE[n] || !bValue;
 				break;
-			case JCA_IOT_CODE_CMD_Z		: 
+			case JCA_IOT_CODE_CMD_Z		:
 				if(this->Code[i]->type == JCA_IOT_CODE_VECTOR_IO){
 					this->IOs[this->Code[i]->pos]->setBool(this->VKE[n]);
 				}else{
@@ -438,7 +514,7 @@ int cCode::doCode(uint32_t ulMicros){
 				}
 				this->Init[n]=true;
 				break;
-			case JCA_IOT_CODE_CMD_S		: 
+			case JCA_IOT_CODE_CMD_S		:
 				if(this->VKE[n]){
 					#ifdef _DEBUG_ON
 						Serial.print(" SET IO:");
@@ -457,7 +533,7 @@ int cCode::doCode(uint32_t ulMicros){
 				}
 				this->Init[n]=true;
 				break;
-			case JCA_IOT_CODE_CMD_R		: 
+			case JCA_IOT_CODE_CMD_R		:
 				if(this->VKE[n]){
 					#ifdef _DEBUG_ON
 						Serial.print(" RESET IO:");
@@ -476,100 +552,100 @@ int cCode::doCode(uint32_t ulMicros){
 				}
 				this->Init[n]=true;
 				break;
-			case JCA_IOT_CODE_CMD_L_L	: 
+			case JCA_IOT_CODE_CMD_L_L	:
 				this->akkuL = lValue;
 				break;
-			case JCA_IOT_CODE_CMD_L_SUB	: 
+			case JCA_IOT_CODE_CMD_L_SUB	:
 				this->akkuL = this->akkuL - lValue;
 				break;
-			case JCA_IOT_CODE_CMD_L_ADD	: 
+			case JCA_IOT_CODE_CMD_L_ADD	:
 				this->akkuL = this->akkuL + lValue;
 				break;
-			case JCA_IOT_CODE_CMD_L_MUL	: 
+			case JCA_IOT_CODE_CMD_L_MUL	:
 				this->akkuL = this->akkuL * lValue;
 				break;
-			case JCA_IOT_CODE_CMD_L_DIV	: 
+			case JCA_IOT_CODE_CMD_L_DIV	:
 				this->akkuL = this->akkuL / lValue;
 				break;
-			case JCA_IOT_CODE_CMD_L_GT	: 
+			case JCA_IOT_CODE_CMD_L_GT	:
 				this->VKE[n] = this->akkuL > lValue;
 				break;
-			case JCA_IOT_CODE_CMD_L_LT	: 
+			case JCA_IOT_CODE_CMD_L_LT	:
 				this->VKE[n] = this->akkuL < lValue;
 				break;
-			case JCA_IOT_CODE_CMD_L_GE	: 
+			case JCA_IOT_CODE_CMD_L_GE	:
 				this->VKE[n] = this->akkuL >= lValue;
 				break;
-			case JCA_IOT_CODE_CMD_L_LE	: 
+			case JCA_IOT_CODE_CMD_L_LE	:
 				this->VKE[n] = this->akkuL <= lValue;
 				break;
-			case JCA_IOT_CODE_CMD_L_NE	: 
+			case JCA_IOT_CODE_CMD_L_NE	:
 				this->VKE[n] = this->akkuL != lValue;
 				break;
-			case JCA_IOT_CODE_CMD_L_EQ	: 
+			case JCA_IOT_CODE_CMD_L_EQ	:
 				this->VKE[n] = this->akkuL == lValue;
 				break;
-			case JCA_IOT_CODE_CMD_L_T	: 
+			case JCA_IOT_CODE_CMD_L_T	:
 				if(this->Code[i]->type == JCA_IOT_CODE_VECTOR_IO){
 					this->IOs[this->Code[i]->pos]->setLong(this->akkuL);
 				}else{
 					return i;
 				}
 				break;
-			case JCA_IOT_CODE_CMD_F_L	: 
+			case JCA_IOT_CODE_CMD_F_L	:
 				this->akkuF = fValue;
 				break;
-			case JCA_IOT_CODE_CMD_F_SUB	: 
+			case JCA_IOT_CODE_CMD_F_SUB	:
 				this->akkuF = this->akkuF - fValue;
 				break;
-			case JCA_IOT_CODE_CMD_F_ADD	: 
+			case JCA_IOT_CODE_CMD_F_ADD	:
 				this->akkuF = this->akkuF + fValue;
 				break;
-			case JCA_IOT_CODE_CMD_F_MUL	: 
+			case JCA_IOT_CODE_CMD_F_MUL	:
 				this->akkuF = this->akkuF * fValue;
 				break;
-			case JCA_IOT_CODE_CMD_F_DIV	: 
+			case JCA_IOT_CODE_CMD_F_DIV	:
 				this->akkuF = this->akkuF / fValue;
 				break;
-			case JCA_IOT_CODE_CMD_F_GT	: 
+			case JCA_IOT_CODE_CMD_F_GT	:
 				this->VKE[n] = this->akkuF > fValue;
 				break;
-			case JCA_IOT_CODE_CMD_F_LT	: 
+			case JCA_IOT_CODE_CMD_F_LT	:
 				this->VKE[n] = this->akkuF < fValue;
 				break;
-			case JCA_IOT_CODE_CMD_F_GE	: 
+			case JCA_IOT_CODE_CMD_F_GE	:
 				this->VKE[n] = this->akkuF >= fValue;
 				break;
-			case JCA_IOT_CODE_CMD_F_LE	: 
+			case JCA_IOT_CODE_CMD_F_LE	:
 				this->VKE[n] = this->akkuF <= fValue;
 				break;
-			case JCA_IOT_CODE_CMD_F_NE	: 
+			case JCA_IOT_CODE_CMD_F_NE	:
 				this->VKE[n] = this->akkuF != fValue;
 				break;
-			case JCA_IOT_CODE_CMD_F_EQ	: 
+			case JCA_IOT_CODE_CMD_F_EQ	:
 				this->VKE[n] = this->akkuF == fValue;
 				break;
-			case JCA_IOT_CODE_CMD_F_T	: 
+			case JCA_IOT_CODE_CMD_F_T	:
 				if(this->Code[i]->type == JCA_IOT_CODE_VECTOR_IO){
 					this->IOs[this->Code[i]->pos]->setFloat(this->akkuF);
 				}else{
 					return i;
 				}
 				break;
-			case JCA_IOT_CODE_CMD_SPB	: 
+			case JCA_IOT_CODE_CMD_SPB	:
 				if(this->VKE[n]){
 					this->Init[n] = true;
 					i = this->Code[i]->pos;
 				}
 				break;
-			case JCA_IOT_CODE_CMD_SPN	: 
+			case JCA_IOT_CODE_CMD_SPN	:
 				if(!this->VKE[n]){
 					this->Init[n] = true;
 					i = this->Code[i]->pos;
 				}
 				break;
-			case JCA_IOT_CODE_CMD_DEST	: 
-				; 
+			case JCA_IOT_CODE_CMD_DEST	:
+				;
 				break;
 			default :
 				return i;
@@ -690,7 +766,7 @@ IO::cRoot* cCode::getIO(int iIndex){
 /**********************************************
  * Methode: getCodeSize()
  * Info:	Gibt die Größe des Code-Vectors zurück
- * Param:	
+ * Param:
  * Return:	Anzahl Code Zeilen [int]
  * Version:
  *	V1.0.0	Erstellt	23.05.2018	JCA
@@ -705,7 +781,7 @@ int cCode::getCodeSize(){
 /**********************************************
  * Methode: getIoSize()
  * Info:	Gibt die Größe des IO-Vectors zurück
- * Param:	
+ * Param:
  * Return:	Anzahl IOs [int]
  * Version:
  *	V1.0.0	Erstellt	17.09.2018	JCA
@@ -720,7 +796,7 @@ int cCode::getIoSize(){
 /**********************************************
  * Methode: getFaultIO()
  * Info:	Gibt die erste fehlerhafte IO-Zeile zurück
- * Param:	
+ * Param:
  * Return:	Fehlerhafte IO-Zeile [int]
  * Version:
  *	V1.0.0	Erstellt	13.09.2018	JCA
@@ -735,7 +811,7 @@ int cCode::getFaultIO(){
 /**********************************************
  * Methode: getFaultCode()
  * Info:	Gibt die erste fehlerhafte Code-Zeile zurück
- * Param:	
+ * Param:
  * Return:	Fehlerhafte Code-Zeile [int]
  * Version:
  *	V1.0.0	Erstellt	13.09.2018	JCA
@@ -750,10 +826,10 @@ int cCode::getFaultCode(){
 /**********************************************
  * Methode: addIO(std::vector<char*> vPar, int iType)
  * Info:	fügt dem IO-Vector ein Element hinzu
- * Param:	
+ * Param:
  *		vPar = Vector aller Char Parameter
  *		iType = Type-Kennung des IOs
- * Return:	
+ * Return:
  * Version:
  *	V1.0.0	Erstellt	21.05.2018	JCA
  **********************************************/
@@ -816,18 +892,18 @@ void cCode::addIO(std::vector<char*> vPar, int iType){
 				this->IOs.push_back(new IO::cAI(vPar[1],atoi(vPar[2]),atof(vPar[3]),atof(vPar[4]),atof(vPar[5])));
 			}
 			break;
-	}	
+	}
 }
 
 /**********************************************
  * Methode: updateIO(std::vector<char*> vPar, int iType)
  * Info:	Wertet den Code aus und erzeugt
  *				daraus einen vector
- * Param:	
+ * Param:
  *		vPar = Vector aller Char Parameter
  *		iType = Typekennung des IO
  *		iIndex = Index des IO im IOS-Vector
- * Return:	
+ * Return:
  * Version:
  *	V1.0.0	Erstellt	21.05.2018	JCA
  **********************************************/
@@ -872,7 +948,7 @@ int cCode::findIO(char* strName){
 			return i;
 		}
 	}
-	
+
 	return -1;
 }
 
@@ -880,7 +956,7 @@ int cCode::findIO(char* strName){
  * Methode: getTypeIO(char* strType, int* iType, int* iMinLen)
  * Info:	Ermittelt die Typekennung und die
  *				Mindestlänge der Parameter
- * Param:	
+ * Param:
  *		strType = Type-String
  *		*iType  = Rückgabewert des gefunden Types
  *		*iMinLen= Mindest anzahl an Parametern
@@ -927,7 +1003,7 @@ bool cCode::getTypeIO(char* strType, int* iType, int* iMinLen){
 		*iMinLen = JCA_IOT_IO_L_AI;
 		return true;
 	}
-	
+
 	//Keine Type gefunden
 	return false;
 }
@@ -1046,7 +1122,7 @@ int cCode::insertCode(char* strLine){
  * Methode: getFunctionCode(char* strFunc, int* iFunc, int* iMinLen)
  * Info:	Ermittelt die Funktionskennung und die
  *				Mindestlänge der Parameter
- * Param:	
+ * Param:
  *		strFunc = FunktionsString
  *		*iFunc  = Rückgabewert der gefunden Funktion
  *		*iMinLen= Mindest anzahl an Parametern
@@ -1273,14 +1349,14 @@ bool cCode::getFunctionCode(char* strFunc, int* iFunc, int* iMinLen){
  * Info:	Ermittelt den Variablentype und
  *				sucht diesen in den IOs bzw.
  *				schreibt ihn in die Konsatnten.
- * Param:	
+ * Param:
  *		strValue= VariablenString
  *		iFunc   = Befehls Funktions-Code als Int
  *		*iType  = VectorType für die Variable
  *		*iPos   = IN : Codezeile
  *				  OUT: Position der Variable im Vektor
  * Wertaufbau:
- *		{IO}			
+ *		{IO}
  *		Konstante/Ziel
  *		#x#Spezialkonstante
  *		[Sprungmarke]
@@ -1292,18 +1368,18 @@ bool cCode::getValueCode(char* strValue, int iFunc, int* iType, int* iPos){
 	#ifdef _DEBUG_ON
 		Serial.println("cCode::getValueCode");
 	#endif
-	
+
 	bool valueFound = false;
 	char* pch;
 	char strText[JCA_IOT_CODE_NAMELEN] = "";
 	int i = 0;
-	
+
 	//Function ist eine Klammeroperation
 	if(iFunc < 100){
 		*iType = 0;
 		return true;
 	}
-	
+
 	//Function ist ein Sprung
 	if(iFunc > 900 && iFunc < 910){
 		*iType = 0;
@@ -1320,7 +1396,7 @@ bool cCode::getValueCode(char* strValue, int iFunc, int* iType, int* iPos){
 		this->JmpLine.push_back(new cJump(*iPos, strText));
 		return true;
 	}
-		
+
 	//Variable ist ein IO
 	if(strstr(strValue, "{") && strstr(strValue, "}")){
 		*iType = JCA_IOT_CODE_VECTOR_IO;
@@ -1335,13 +1411,13 @@ bool cCode::getValueCode(char* strValue, int iFunc, int* iType, int* iPos){
 		}
 		return true;
 	}
-	
+
 	//Variale ist eine Spezialkonstante, Konvertierung zu int32_t / Float
 	if(strstr(strValue, "#")){
 		//noch nicht unterstützt
 		return false;
 	}
-	
+
 	//Variable ist eine Konstante
 	if(iFunc > 100 && iFunc < 200){
 		//Bool
@@ -1367,8 +1443,7 @@ bool cCode::getValueCode(char* strValue, int iFunc, int* iType, int* iPos){
 		this->floatConst.push_back(vConst);
 		return true;
 	}
-	
+
 	//Keine Funktion gefunden
 	//return false;
 }
-

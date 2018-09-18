@@ -13,7 +13,7 @@ using namespace JCA::IOT::MESH;
  * Version:
  *	V1.0.0	Erstellt	14.09.2018	JCA
  **********************************************/
-cTag::cTag(char* strTag, int iSetTime, int iIndex, bool bRecv){
+cTag::cTag(char* strTag, int iSetTime, int iIndex, bool bRecv, bool bRequest){
 	#ifdef _DEBUG_ON
 		Serial.print("cTag::cTag");
 	#endif
@@ -22,8 +22,13 @@ cTag::cTag(char* strTag, int iSetTime, int iIndex, bool bRecv){
 	this->setTime = 1000000 * (uint32_t)iSetTime;
 	this->recv = bRecv;
 	this->count = 0;
-	this->found = false;
-	this->linked = false;
+	if(bRequest){
+		this->found = true;
+		this->linked = true;
+	}else{
+		this->found = false;
+		this->linked = false;
+	}
 	#ifdef _DEBUG_ON
 		Serial.print(" Name:");
 		Serial.print(strName);

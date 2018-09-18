@@ -40,9 +40,8 @@ class cHandler {
 
 	protected:
 
-		void checkMissingStations();
-		void checkMissingTags();
-		void checkUnlinkedTags();
+		void checkMissingStations(uint16_t iStation);
+		void checkMissingTags(uint16_t iStation);
 
 		void receiveDatalist(uint32_t ID);
 		void receiveDatatags(uint32_t ID);
@@ -50,16 +49,14 @@ class cHandler {
 		void receiveLinked(uint32_t ID);
 		void receiveHowIs(uint32_t ID);
 
-
-		void iAm(char* strDataList);
-		void giveMe(int iStationId);
 		bool genTagList();
-		bool updateList(char* strStation, uint32_t ID, char* strTag, int iSetTime, int iIndex, char cRecv);
+		bool updateList(char* strStation, uint32_t ID, char* strTag, int iSetTime, int iIndex, char cRecv, bool bRequest);
 
 		char msgIn[JCA_IOT_MESH_MSG_LEN];
 		char msgOut[JCA_IOT_MESH_MSG_LEN];
 		char msgLoop[JCA_IOT_MESH_MSG_LEN];
-		int checkMode;
+		uint16_t checkMode;
+		uint16_t checkStation;
 
 		painlessMesh* mesh;
 		JCA::IOT::cCode* code;

@@ -3,7 +3,7 @@
 //--------------------------------------------------------------------------
 void initCode(){
   File file = SPIFFS.open(CODE_FILE, "r");
-  Runner.pharseFile(&file);
+//  Runner.pharseFile(&file);
   file.close();
 }
 

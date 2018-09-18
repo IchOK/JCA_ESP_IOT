@@ -14,7 +14,7 @@
 namespace JCA{ namespace IOT{ namespace MESH{
 class cTag {
 	public:
-		cTag(char* strTag, int iSetTime, int iIndex, bool bRecv);
+		cTag(char* strTag, int iSetTime, int iIndex, bool bRecv, bool bRequest);
 
 		char	name[30];
 		int		ioIndex;

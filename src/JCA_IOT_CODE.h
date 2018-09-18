@@ -8,6 +8,10 @@
 			Type;Par1;Par2;...
 			Type;...
 			$IO_END
+			$MESH
+			RemStation;RemTag;LokalTag;Zyklus;R/S(Recv/Send)
+			RemStation;...
+			$MESH_END
 			$CODE
 			Befehl" "Wert
 						{IO}
@@ -110,6 +114,8 @@
 #define JCA_IOT_CODE_LINELEN		80
 #define JCA_IOT_CODE_TIEFE			32
 
+//#include "JCA_IOT_MESH_Handler.h"
+
 
 #include <FS.h>
 #include <string.h>
@@ -119,10 +125,10 @@ class cCode {
 	public:
 		cCode();
 		void setStart();
-		bool pharseFile(File* file);
+		bool pharseFile(File* file, std::function<void(char*, char*, int, int, char)> xAddToList);
 		char* analyseIOs(char* strLine);
 		char* analyseCode(char* strLine);
-		char* analyseMesh(char* strLine);
+		char* analyseMesh(char* strLine, std::function<void(char*, char*, int, int, char)> xAddToList);
 		int doIOs();
 		int doCode(uint32_t ulMicros);
 		int insertIO(char* strLine);
@@ -159,8 +165,10 @@ class cCode {
 		//Datenpunkt zur Initialisierung des Codeinterpreter
 		bool areaIO;
 		bool areaCode;
+		bool areaMesh;
 		int  faultIO;
 		int  faultCode;
+		int  faultMesh;
 
 		//Datenpunkte zur Code verarbeitung
 		bool VKE[32];		//Logisches Verknüpfungsergebniss, durch Klammern maximale 32 Ebenen erreicht werden
