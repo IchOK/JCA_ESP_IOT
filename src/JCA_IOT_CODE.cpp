@@ -49,7 +49,7 @@ void cCode::setStart(){
  * Version:
  *	V1.0.0	Erstellt	21.05.2018	JCA
  **********************************************/
-bool cCode::pharseFile(File* file, std::function<void(char*, char*, int, int, char)> xAddToList){
+bool cCode::pharseFile(File* file, void (*xAddToList)(char*, char*, int, int, char)){
 	#ifdef _DEBUG_ON
 		Serial.println("cCode::pharseFile");
 	#endif
@@ -233,7 +233,7 @@ char* cCode::analyseCode(char* strLine){
  * Version:
  *	V1.0.0	Erstellt	17.09.2018	JCA
  **********************************************/
-char* cCode::analyseMesh(char* strLine, std::function<void(char*, char*, int, int, char)> xAddToList){
+char* cCode::analyseMesh(char* strLine, void (*xAddToList)(char*, char*, int, int, char)){
 	#ifdef _DEBUG_ON
 		Serial.println("cCode::analyseMesh");
 	#endif

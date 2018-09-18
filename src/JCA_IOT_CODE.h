@@ -125,10 +125,10 @@ class cCode {
 	public:
 		cCode();
 		void setStart();
-		bool pharseFile(File* file, std::function<void(char*, char*, int, int, char)> xAddToList);
+		bool pharseFile(File* file, void (*xAddToList)(char*, char*, int, int, char));
 		char* analyseIOs(char* strLine);
 		char* analyseCode(char* strLine);
-		char* analyseMesh(char* strLine, std::function<void(char*, char*, int, int, char)> xAddToList);
+		char* analyseMesh(char* strLine, void (*xAddToList)(char*, char*, int, int, char));
 		int doIOs();
 		int doCode(uint32_t ulMicros);
 		int insertIO(char* strLine);

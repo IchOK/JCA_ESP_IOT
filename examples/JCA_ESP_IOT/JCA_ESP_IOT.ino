@@ -18,6 +18,7 @@
 
 #include "JCA_IOT_IO_All.h"
 #include "JCA_IOT_CODE.h"
+#include "JCA_IOT_MESH_Handler.h"
 
 using namespace JCA::IOT;
 
@@ -37,9 +38,11 @@ cCode Runner;
 void initMesh();
 void runMesh();
 void receivedCallback( const uint32_t &from, const String &msg );
+void addCodeToMesh(char* strStation, char* strTag, int iSetTime, int iIndex, char cRecv);
 IPAddress getLocalIP();
 //  Handler
 painlessMesh  mesh;
+MESH::cHandler meshHandler(&mesh, &Runner);
 #ifdef _DEBUG_ON
   IPAddress myIP(0,0,0,0);
   IPAddress myAPIP(0,0,0,0);

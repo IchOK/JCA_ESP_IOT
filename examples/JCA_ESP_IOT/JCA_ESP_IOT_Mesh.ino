@@ -125,3 +125,7 @@ void runMesh(){
 }
 
 
+void addCodeToMesh(char* strStation, char* strTag, int iSetTime, int iIndex, char cRecv){
+  meshHandler.addToList(strStation, strTag, iSetTime, iIndex, cRecv);
+}
+
