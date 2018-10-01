@@ -34,7 +34,8 @@ class cHandler {
 		cHandler(painlessMesh* xMesh, JCA::IOT::cCode* xCode);
 		void update(uint32_t ulMicros);	//loop Funktion Zähler erhöhen und Daten senden
 		void helloAll();		//Wenn connected mit dem Netzwerk
-		void receiveData(uint32_t ID, String* strData);		//Wenn Daten empfangen wurden
+		void hello(uint32_t nodeId);
+		void receiveData(uint32_t ID, const String strData);		//Wenn Daten empfangen wurden
 		void checkStations();						//alle 10s prüfen ob alle Stationen verbunden sind sonst fehlende anfragen
 		void addToList(char* strStation, char* strTag, int iSetTime, int iIndex, char cRecv);//Datenpunkt in Liste eintragen
 
@@ -57,6 +58,8 @@ class cHandler {
 		char msgLoop[JCA_IOT_MESH_MSG_LEN];
 		uint16_t checkMode;
 		uint16_t checkStation;
+		uint32_t microsOld;
+		bool microsInit;
 
 		painlessMesh* mesh;
 		JCA::IOT::cCode* code;

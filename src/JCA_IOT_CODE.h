@@ -170,6 +170,9 @@ class cCode {
 		int  faultCode;
 		int  faultMesh;
 
+		uint32_t microsCodeOld;
+		bool microsCodeInit;
+
 		//Datenpunkte zur Code verarbeitung
 		bool VKE[32];		//Logisches Verknüpfungsergebniss, durch Klammern maximale 32 Ebenen erreicht werden
 		bool Init[32];		//Initalisierung der Verknüpfungsebene (1:Verknpüfung wird neu gebildet)

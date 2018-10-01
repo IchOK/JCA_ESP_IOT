@@ -9,7 +9,11 @@ DO;LedGelb;4;0//D2
 DO;LedGruen1;0;0//D3
 DO;LedGruen2;2;0//D4
 Bool;Request;0
+Bool;ExtIO;0
 $IO_END
+$MESH
+Nummer2;Button2;ExtIO;2;R
+§MESH_END
 $CODE
 AN {Button2}
 A {Request}

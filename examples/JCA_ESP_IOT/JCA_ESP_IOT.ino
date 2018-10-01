@@ -37,7 +37,9 @@ cCode Runner;
 //  Prototypes
 void initMesh();
 void runMesh();
-void receivedCallback( const uint32_t &from, const String &msg );
+void receivedCallback( const uint32_t from, const String &msg );
+void newConnection(uint32_t nodeID);
+void lostConnection(uint32_t nodeID);
 void addCodeToMesh(char* strStation, char* strTag, int iSetTime, int iIndex, char cRecv);
 IPAddress getLocalIP();
 //  Handler

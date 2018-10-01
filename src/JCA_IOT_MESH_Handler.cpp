@@ -3,7 +3,7 @@
  **********************************************/
 
 #include <JCA_IOT_MESH_Handler.h>
-//#define _DEBUG_ON
+#define _DEBUG_ON
 
 using namespace JCA::IOT::MESH;
 /**********************************************
@@ -21,6 +21,7 @@ cHandler::cHandler(painlessMesh* xMesh, JCA::IOT::cCode* xCode){
 	this->code = xCode;
 	this->checkMode = 0;
 	this->checkStation = 0;
+	this->microsInit = true;
 }
 
 /**********************************************
@@ -35,23 +36,48 @@ cHandler::cHandler(painlessMesh* xMesh, JCA::IOT::cCode* xCode){
  *	V1.0.0	Erstellt	14.09.2018	JCA
  **********************************************/
 void cHandler::update(uint32_t ulMicros){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::update");
+	#endif
+	uint32_t microsDiff;
 	uint16_t x;
 	uint16_t y;
 	bool bSend;
 	char buffer[30];
+	if(this->microsInit){
+		this->microsOld = ulMicros;
+		this->microsInit = false;
+	}
+	microsDiff = ulMicros - this->microsOld;
+	this->microsOld = ulMicros;
+
 	for(x=0;x<this->stations.size();x++){
+		#ifdef _DEBUG_ON
+			Serial.print("Station: ");
+			Serial.print(x);
+		#endif
 		if(this->stations[x]->id != this->mesh->getNodeId()){
 			//stations Watchdog
 			if(this->stations[x]->watchDog > JCA_IOT_MESH_STATION_WD){
 				this->stations[x]->id = 0; //Station nicht mehr vorhanden
 			}else{
-				this->stations[x]->watchDog += ulMicros;
+				this->stations[x]->watchDog += microsDiff;
 			}
+			#ifdef _DEBUG_ON
+				Serial.print(" Name = ");
+				Serial.println(this->stations[x]->name);
+			#endif
 
 			bSend = false;
 			strcpy(this->msgOut, "DATA$");
 			//tags jeder Station durchlaufen
-			for(y=0;this->stations[x]->tags.size();y++){
+			for(y=0;y<this->stations[x]->tags.size();y++){
+				#ifdef _DEBUG_ON
+					Serial.print("Tags: ");
+					Serial.print(y);
+					Serial.print(" Name = ");
+					Serial.println(this->stations[x]->tags[y]->name);
+				#endif
 				if(this->stations[x]->tags[y]->count > this->stations[x]->tags[y]->setTime){
 					if(this->stations[x]->tags[y]->recv){
 						this->code->getIO(this->stations[x]->tags[y]->ioIndex)->setQC(JCA_IOT_QC_COMMLAST);
@@ -64,7 +90,7 @@ void cHandler::update(uint32_t ulMicros){
 						this->stations[x]->tags[y]->count = 0;
 					}
 				}else{
-					this->stations[x]->tags[y]->count += ulMicros;
+					this->stations[x]->tags[y]->count += microsDiff;
 				}
 			}
 			if(bSend && this->mesh->isConnected(this->stations[x]->id)){
@@ -73,6 +99,9 @@ void cHandler::update(uint32_t ulMicros){
 			}
 		}
 	}
+	#ifdef _DEBUG_ON
+		Serial.println(" End");
+	#endif
 }
 
 /**********************************************
@@ -84,9 +113,30 @@ void cHandler::update(uint32_t ulMicros){
  *	V1.0.0	Erstellt	17.09.2018	JCA
  **********************************************/
 void cHandler::helloAll(){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::helloAll");
+	#endif
 	if(this->genTagList()){
 		String dummy = String(this->msgOut);
 		this->mesh->sendBroadcast(dummy);
+	}
+}
+
+/**********************************************
+ * Methode: hello(uint32_t nodeId)
+ * Info:	Bekanntmachung mit stationsname und allen tags
+ * Param:
+ * Return:
+ * Version:
+ *	V1.0.0	Erstellt	22.09.2018	JCA
+ **********************************************/
+void cHandler::hello(uint32_t nodeId){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::hello");
+	#endif
+	if(this->genTagList()){
+		String dummy = String(this->msgOut);
+		this->mesh->sendSingle(nodeId, dummy);
 	}
 }
 
@@ -100,15 +150,18 @@ void cHandler::helloAll(){
  * Version:
  *	V1.0.0	Erstellt	17.09.2018	JCA
  **********************************************/
-void cHandler::receiveData(uint32_t ID, String* strData){
+void cHandler::receiveData(uint32_t ID, const String strData){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::receiveData");
+	#endif
 	char* ptr;
 	int iPos;
 	char strType[20];
 
-	iPos = strData->indexOf("$");
-	if(iPos > 0 && iPos < strData->length()){
-		strData->substring(0,iPos-1).toCharArray(strType,20);
-		strData->substring(iPos+1).toCharArray(this->msgIn,JCA_IOT_MESH_MSG_LEN);
+	iPos = strData.indexOf("$");
+	if(iPos > 0 && iPos < strData.length()){
+		strData.substring(0,iPos-1).toCharArray(strType,20);
+		strData.substring(iPos+1).toCharArray(this->msgIn,JCA_IOT_MESH_MSG_LEN);
 
 		//Tag-Auflistung empfangen
 		if(strcmp(ptr,"DATALIST") == 0){
@@ -148,6 +201,9 @@ void cHandler::receiveData(uint32_t ID, String* strData){
  *	V1.0.0	Erstellt	17.09.2018	JCA
  **********************************************/
 void cHandler::checkStations(){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::checkStations");
+	#endif
 	if(this->checkStation >= this->stations.size()){
 		this->checkStation = 0;
 	}
@@ -184,6 +240,9 @@ void cHandler::checkStations(){
  *	V1.0.0	Erstellt	18.09.2018	JCA
  **********************************************/
 void cHandler::addToList(char* strStation, char* strTag, int iSetTime, int iIndex, char cRecv){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::addToList");
+	#endif
 	this->updateList(strStation, 0, strTag, iSetTime, iIndex, cRecv, false);
 }
 
@@ -196,6 +255,9 @@ void cHandler::addToList(char* strStation, char* strTag, int iSetTime, int iInde
  *	V1.0.0	Erstellt	17.09.2018	JCA
  **********************************************/
 void cHandler::checkMissingStations(uint16_t iStation){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::checkMissingStations");
+	#endif
 	//String msg;
 	if(iStation<this->stations.size()){
 		if(this->stations[iStation]->id == 0){
@@ -207,6 +269,9 @@ void cHandler::checkMissingStations(uint16_t iStation){
 	}
 }
 void cHandler::checkMissingTags(uint16_t iStation){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::checkMissingTags");
+	#endif
 	uint16_t y;
 	char strZyklus[10];
 	bool bSend;
@@ -246,6 +311,9 @@ void cHandler::checkMissingTags(uint16_t iStation){
  *	V1.0.0	Erstellt	17.09.2018	JCA
  **********************************************/
 void cHandler::receiveDatalist(uint32_t ID){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::receiveDatalist");
+	#endif
 	char* ptr;
 	uint16_t x;
 	uint16_t y;
@@ -274,6 +342,9 @@ void cHandler::receiveDatalist(uint32_t ID){
 	}
 }
 void cHandler::receiveDatatags(uint32_t ID){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::receiveDatatags");
+	#endif
 	char* ptr;
 	char strName[60];
 	char strValue[30];
@@ -306,6 +377,9 @@ void cHandler::receiveDatatags(uint32_t ID){
 	}
 }
 void cHandler::receiveRequest(uint32_t ID){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::receiveRequest");
+	#endif
 	char* ptr;
 	char strStation[30];
 	char strName[60];
@@ -346,6 +420,9 @@ void cHandler::receiveRequest(uint32_t ID){
 	}
 }
 void cHandler::receiveLinked(uint32_t ID){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::receiveLinked");
+	#endif
 	char* ptr;
 	uint16_t x;
 	uint16_t y;
@@ -371,6 +448,9 @@ void cHandler::receiveLinked(uint32_t ID){
 	}
 }
 void cHandler::receiveHowIs(uint32_t ID){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::receiveHowIs");
+	#endif
 	uint16_t x;
 	for(x=0;x<this->stations.size();x++){
 		if(this->stations[x]->id == this->mesh->getNodeId()){
@@ -402,6 +482,9 @@ void cHandler::receiveHowIs(uint32_t ID){
  *	V1.0.0	Erstellt	17.09.2018	JCA
  **********************************************/
 bool cHandler::updateList(char* strStation, uint32_t ID, char* strTag, int iSetTime, int iIndex, char cRecv, bool bRequest){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::updateList");
+	#endif
 	if(iIndex >= 0){
 		uint16_t x;
 		uint16_t y;
@@ -460,6 +543,9 @@ bool cHandler::updateList(char* strStation, uint32_t ID, char* strTag, int iSetT
  *	V1.0.0	Erstellt	17.09.2018	JCA
  **********************************************/
 bool cHandler::genTagList(){
+	#ifdef _DEBUG_ON
+		Serial.print("JCA::IOT::MESH::cHandler::genTagList");
+	#endif
 	uint16_t x;
 	bool found = false;
 	strcpy(this->msgOut, "DATALIST$");

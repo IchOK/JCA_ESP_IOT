@@ -5,9 +5,5 @@
 		"Channel":11,
 		"Port":5555
 	},
-	"Station":{
-		"SSID":"Home Sweet Home 1",
-		"Pass":"1591409202662413"
-	},
-	"Hostname":"TestIOT"
+	"Hostname":"Nummer1"
 }

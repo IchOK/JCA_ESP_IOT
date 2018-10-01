@@ -38,6 +38,7 @@ void cCode::setStart(){
 	this->faultCode = 0;
 	this->areaIO = false;
 	this->areaCode = false;
+	this->microsCodeInit = true;
 }
 
 /**********************************************
@@ -346,6 +347,14 @@ int cCode::doIOs(){
  *	V1.0.0	Erstellt
  **********************************************/
 int cCode::doCode(uint32_t ulMicros){
+	uint32_t microsDiff;
+	if(this->microsCodeInit){
+		this->microsCodeOld = ulMicros;
+		this->microsCodeInit = false;
+	}
+	microsDiff = ulMicros - this->microsCodeOld;
+	this->microsCodeOld = ulMicros;
+
 	#ifdef _DEBUG_ON
 		Serial.println("cCode::doCode");
 		Serial.print("Code-Size:");

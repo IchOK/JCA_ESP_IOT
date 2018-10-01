@@ -79,6 +79,8 @@ void initMesh(){
     Serial.println(meshChannel);
   #endif
   mesh.onReceive(&receivedCallback);
+  mesh.onNewConnection(&newConnection);
+  mesh.onDroppedConnection(&lostConnection);
   
   if(wlanIO){
     #ifdef _DEBUG_ON
@@ -90,19 +92,30 @@ void initMesh(){
     mesh.stationManual(wlanSSID, wlanPass);
   }
   mesh.setHostname(strHostname);
-
+  
+  meshHandler.helloAll();
+  
   #ifdef _DEBUG_ON
     myAPIP = IPAddress(mesh.getAPIP());
     Serial.println("My AP IP is " + myAPIP.toString());
   #endif
 }
 
-void receivedCallback( const uint32_t &from, const String &msg ) {
+void receivedCallback( const uint32_t from, const String &msg ) {
   #ifdef _DEBUG_ON
     Serial.printf("bridge: Received from %u msg=%s\n", from, msg.c_str());
   #endif
+  meshHandler.receiveData(from, msg);
+}
+
+void newConnection(uint32_t nodeID){
+  meshHandler.hello(nodeID);
+}
+
+void lostConnection(uint32_t nodeID){
   ;
 }
+
 
 IPAddress getLocalIP() {
   return IPAddress(mesh.getStationIP());
@@ -112,6 +125,7 @@ IPAddress getLocalIP() {
 // Task-Funktion für Mesh-IOs
 //--------------------------------------------------------------------------
 void runMesh(){
+  static uint16_t loopCount;
   #ifdef _DEBUG_ON
     if(myIP != getLocalIP()){
       myIP = getLocalIP();
@@ -122,6 +136,13 @@ void runMesh(){
       Serial.println("My AP IP is " + myAPIP.toString());
     }
   #endif
+
+  meshHandler.update(micros());
+  if(loopCount >= 10){
+    meshHandler.checkStations();
+    loopCount = 0;
+  }
+  loopCount++;
 }
 
 
