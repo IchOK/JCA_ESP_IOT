@@ -18,8 +18,8 @@
  *		-get/set Float/Time/int32_t/Bool/Date
  **********************************************/
 
-#ifndef _JCA_IOT_Func_H
-#define _JCA_IOT_Func_H
+#ifndef _JCA_IOT_FUNC_H
+#define _JCA_IOT_FUNC_H
 
 #define JCA_IOT_FUNC_T_CLOCKSWITCH	1
 #define JCA_IOT_FUNC_T_COMPARE	2

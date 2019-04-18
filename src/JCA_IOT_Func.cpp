@@ -2,7 +2,7 @@
  * Beschreibung: siehe Header File
  **********************************************/
 
-#include <JCA_IOT_Func.h>
+#include <JCA_IOT_FUNC.h>
 
 using namespace JCA::IOT::FUNC;
 /**********************************************
