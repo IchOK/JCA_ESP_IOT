@@ -1,0 +1,16 @@
+{
+  "types":{
+    "IOs":[
+      {"name":"DI","index":1}
+      ,{"name":"DO","index":2}
+    ],
+    "FUNCs":[
+      {"name":"PID-Regler","index":1}
+      ,{"name":"Schaltuhr","index":2}
+    ]
+  },
+  "IOs":[
+    {"name":"Ich bin die 1","type":1}
+    ,{"name":"Ich die 2","type":2}
+  ]
+}

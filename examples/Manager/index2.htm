@@ -1,0 +1,103 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+  <title>IOT Device Manager</title>
+  <link rel="stylesheet" href="./style.css">
+  <script>
+    //Fuktion für ClickEvent auf ein IO
+    function clickIO(name){
+      console.log("clickIO: " + name);
+    }
+
+    //Funktion zum akutallisieren der Webseite
+    function updatePage(){
+      var strJson = null;
+      //HTMLRequest für die konfigdaten einer Station,
+      //  später Abfrage an MeshNetzwerk mittels WebSocket
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.open("GET", "./config.json", false);
+      xmlhttp.send();
+      if (xmlhttp.status==200) {
+        strJson = xmlhttp.responseText;
+      }
+      //Darstellen der Stationsdaten
+      createStation(strJson);
+    }
+    //Funktion zur Darstellung der Stationskonfiguration
+    function createStation(strConfig){
+      var jConfig = JSON.parse(strConfig);
+      var tab = document.getElementById("lstIOs");
+      //Loop über alle IOs
+      for (var i = 0; i < jConfig.IOs.length; i++){
+        //Tabellenzeile erstellen
+        var tr = document.createElement('tr');
+        tr.id = jConfig.IOs[i].name;
+        //Zelle Name
+        var td = document.createElement('td');
+        td.appendChild(document.createTextNode(jConfig.IOs[i].name));
+        td.onclick = function() { clickIO(this.innerHTML); };
+        tr.appendChild(td);
+        //Zelle Type
+        var td = document.createElement('td');
+        for (var j = 0; j < jConfig.types.IOs.length; j++){
+          if (jConfig.types.IOs[j].index == jConfig.IOs[i].type){
+            td.appendChild(document.createTextNode(jConfig.types.IOs[j].name));
+          }
+        }
+        tr.appendChild(td);
+        //Zelle Buttons
+        var td = document.createElement('td');
+        var btn = document.createElement('button');
+        btn.class = "btnEdit";
+        td.appendChild(btn);
+        var btn = document.createElement('button');
+        btn.class = "btnUp";
+        td.appendChild(btn);
+        var btn = document.createElement('button');
+        btn.class = "btnDown";
+        td.appendChild(btn);
+        tr.appendChild(td);
+//Zeile zu Tabelle hinzufügen
+        tab.appendChild(tr);
+        console.log("IO: " + jConfig.IOs[i].name);
+      }
+      //Zeile für neuen Eintrag
+      var tr = document.createElement('tr');
+      tr.id = "new";
+      //Zelle Name
+      var td = document.createElement('td');
+      var edit = document.createElement('input');
+      td.appendChild(edit);
+      edit.type = "text";
+      tr.appendChild(td);
+      //Zelle Type
+      var td = document.createElement('td');
+      var selectList = document.createElement('select');
+      td.appendChild(selectList);
+      for (var j = 0; j < jConfig.types.IOs.length; j++){
+        var option = document.createElement("option");
+        option.value = jConfig.types.IOs[j].index;
+        option.text = jConfig.types.IOs[j].index + " " + jConfig.types.IOs[j].name;
+        selectList.appendChild(option);
+      }
+      tr.appendChild(td);
+      //Zelle Buttons
+
+      //Zeile zu Tabelle hinzufügen
+      tab.appendChild(tr);
+  	}
+    window.onload = updatePage;
+	</script>
+</head>
+<body>
+  <table id="lstIOs" class="hoverTable">
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Edit</th>
+    </tr>
+  </table>
+</body>
+</html>
