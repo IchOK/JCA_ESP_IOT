@@ -8,7 +8,7 @@
  * 	V1.0.0	Erstellt	19.05.2018	JCA
  *		-Define
  **********************************************/
- 
+
 #ifndef _JCA_IOT_QC_H
 #define _JCA_IOT_QC_H
 
@@ -35,8 +35,13 @@
 									  xxxxxx11	Constant	Wert ist eingefrohren
 */
 #define JCA_IOT_QC_GOOD				0b10000000
-#define JCA_IOT_QC_INIT				0b00111100
+#define JCA_IOT_QC_INIT				0b01111100
 #define JCA_IOT_QC_COMMFAULT		0b00011000
 #define JCA_IOT_QC_COMMLAST			0b01010100
-#endif	
-	
+#define JCA_IOT_QC_CONFNAME     0b00000100
+#define JCA_IOT_QC_CONFTYPE     0b00000101
+
+//Code MAKRO
+#define JCA_IOT_QC_IO(wert) ((wert && 0b11000000) <> 0b00000000)
+
+#endif
