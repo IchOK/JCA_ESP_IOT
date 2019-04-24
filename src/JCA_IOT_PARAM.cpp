@@ -2,9 +2,9 @@
  * Beschreibung: siehe Header File
  **********************************************/
 
-#include <JCA_IOT_FUNC_Param.h>
+#include <JCA_IOT_PARAM.h>
 
-using namespace JCA::IOT::FUNC;
+using namespace JCA::IOT;
 /**********************************************
  * Methode: Constructor(const char* strName)
  * Info:	Initialisierung der statischen Werte
@@ -58,19 +58,19 @@ bool  cParam::getBool(){return (bool)this->iValue;}
 bool	cParam::setValue(char* strValue){
 	bool retValue = false;
 	switch(this->Type){
-		case JCA_IOT_FUNC_PARAM_T_FLOAT :
+		case JCA_IOT_PARAM_T_FLOAT :
 			if(isdigit(strValue)){
 				this->fValue = atof(strValue);
 				retValue = true;
 			}
 			break;
-		case JCA_IOT_FUNC_PARAM_T_INT :
+		case JCA_IOT_PARAM_T_INT :
 			if(isdigit(strValue)){
 				this->iVlaue = atoi(strValue);
 				retValue = true;
 			}
 			break;
-		case JCA_IOT_FUNC_PARAM_T_BOOL :
+		case JCA_IOT_PARAM_T_BOOL :
 			if(isdigit(strValue)){
 				if(atoi(strValue) == 0){
 					this->iValue = 0;

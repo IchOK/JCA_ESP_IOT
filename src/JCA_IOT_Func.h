@@ -35,7 +35,7 @@
 #define JCA_IOT_FUNC_F_SOURCE_CODE 0x0300
 
 #include "JCA_IOT_IO.h"
-#include "JCA_IOT_FUNC_Param.h"
+#include "JCA_IOT_PARAM.h"
 
 #include <Arduino.h>
 #include <ArduinoJson.h> //v6

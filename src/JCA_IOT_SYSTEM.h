@@ -2,7 +2,7 @@
  * Class:	JMZ_IOT_SYSTEM
  * Info: 	Die Klasse managt das Verhalten des IOT.
  * Version:
- * 	V1.0.0	Erstellt	18.04.2019	JCA
+ * 	V1.0.0	Erstellt	22.04.2019	JCA
  *		-analyseIOs
  *		-analyseCode
  *		-doCode
@@ -11,28 +11,17 @@
 #ifndef _JCA_IOT_SYSTEM_H
 #define _JCA_IOT_SYSTEM_H
 
-//#include "JCA_IOT_QC.h"
-//#include "JCA_IOT_IO.h"
-//#include "JCA_IOT_IO_DO.h"
-//#include "JCA_IOT_IO_DI.h"
-//#include "JCA_IOT_IO_AO.h"
-//#include "JCA_IOT_IO_AI.h"
-//#include "JCA_IOT_IO_Bool.h"
-//#include "JCA_IOT_IO_Long.h"
-//#include "JCA_IOT_IO_Float.h"
-
-
-#include "JCA_IOT_FUNC.h"
-#include "JCA_IOT_FUNC_Param.h"
-#include "JCA_IOT_FUNC_ClockSwitch.h"
+#include "JCA_IOT_IO_All.h"
+#include "JCA_IOT_FUNC_All.h"
+#include "JCA_IOT_PARAM.h"
 
 #include <FS.h>
 #include <string.h>
 #include <vector>
 namespace JCA{ namespace IOT{
-class cCode {
+class cSystem {
 	public:
-		cCode();
+		cSystem(char* strKonfigfile);
 		void setStart();
 		bool pharseFile(File* file, void (*xAddToList)(char*, char*, int, int, char));
 		char* analyseIOs(char* strLine);

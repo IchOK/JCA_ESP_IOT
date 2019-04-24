@@ -12,17 +12,17 @@
  *		-setValue (string)
  **********************************************/
 
-#ifndef _JCA_IOT_FUNC_PARAM_H
-#define _JCA_IOT_FUNC_PARAM_H
+#ifndef _JCA_IOT_PARAM_H
+#define _JCA_IOT_PARAM_H
 
-#define JCA_IOT_FUNC_PARAM_T_NONE	0
-#define JCA_IOT_FUNC_PARAM_T_FLOAT	1
-#define JCA_IOT_FUNC_PARAM_T_INT	2
-#define JCA_IOT_FUNC_PARAM_T_BOOL	3
+#define JCA_IOT_PARAM_T_NONE	0
+#define JCA_IOT_PARAM_T_FLOAT	1
+#define JCA_IOT_PARAM_T_INT	2
+#define JCA_IOT_PARAM_T_BOOL	3
 
 
 #include <string.h>
-namespace JCA{ namespace IOT{ namespace FUNC{
+namespace JCA{ namespace IOT{
 class cParam {
 	public:
 		cParam(const char* strName, int iType);
@@ -39,6 +39,6 @@ class cParam {
 		float fValue;
 		int32_t iValue;
 };
-}}}
+}}
 
 #endif
