@@ -1,0 +1,157 @@
+Aufbau JsonObject einer Station
+
+{
+  "STATIONSNAME" : {
+    "elements" : [
+      { #ELEMENT# },
+      { #ELEMENT# }
+    ],
+    "meshid" : id,
+    ...
+  }
+}
+
+Aufbau JsonObject eines ELEMENT
+  AREA_ID -> 1=IO, 2=Funktion, 3=Mesh-IO
+  TYPE_ID -> 101=DI, 102=DO, ..., 201=PID, ..., 301=mDI
+  DATA_ID -> 1=Bool, 2=Int, 3=Float
+  ENABLEX -> u=MeshUpdate (von Zentrale), p=MeshPut, sonst nur durch die Konfigurationsdatei (Kombination möglich)
+  DIRX    -> i=Input, o=Output (Kombination möglich)
+{
+  "name" : "NAME",
+  "area" : AREA_ID,
+  "type" : TYPE_ID,
+  "params" : [
+    { "name":"NAME", "datatype":DATA_ID, "write":"u", "value":WERT }
+  ],
+  "values" : [
+    { "name":"NAME", "datatype":DATA_ID, "write":"ENABLEX", "value":WERT, "quality":QC }
+  ],
+  "interfaces" : [
+    { "name":"NAME", "datatype":DATA_ID, "dir":"DIRX", "value":WERT, "area":AREA_ID, "ielement":Y, "ivalue":Y }
+  ],
+  "meshs" : [
+    { "name":"NAME", "xstation":"NAME", "xelement":"NAME", "xvalue":"NAME", "dir":"DIRX", "ivalue":X, "iinterface":Y }
+  ]
+}
+
+Aufbau JsonObject eines Mesh-Datensatzes, es können mehrere Datensätze als Array versendet werden
+  KENNUNG:
+    01=Config delete ELEMENT  ->  beschreibt die Stationseigene Konfigurationsdatei, * als Elementname löscht alle Elemente
+        wird nur von der Station bearbeitet
+    02=Config insert ELEMENT  ->  beschreibt die Stationseigene Konfigurationsdatei, bestehendes Element wird komplett gelöscht
+        wird nur von der Station bearbeitet
+    03=Config update ELEMENT  ->  beschreibt die Stationseigene Konfigurationsdatei, nur enthaltene Einträge werden überschrieben/erstellt (Element muss existieren)
+        wird nur von der Station bearbeitet
+    04=Config get ELEMENT     ->  fordert die Konfiguration eines Elements aus der Konfigurationsdatei an
+        wird nur von der Station bearbeitet
+    05=Config get STATION     ->  fordert die komplette Konfigurationsdatei an
+        wird nur von der Station bearbeitet
+
+    13=Runtime update ELEMENT ->  verändert die aktuelle Runtime
+        wird von der Station an das Element übergeben
+          Zugriff:
+          params/values : value (abhängig der Rechte write)
+          interfaces : area, ielement, ivalue
+          meshs : alles
+    14=Runtime get ELEMENT    ->  fordert die Konfiguration eines Elements zur Runtime an
+        wird von der Station beim Element abgefragt
+    15=Runtime get Station    ->  fordert die konfiguration der kompletten Station zur Runtime an
+        wird aus Stationsdaten zusammen mit den Elementabfragen gebildet
+
+    21=ELEMENT get value      ->  fragt einen Wert eines Elements ab.
+        wird von der Station mittels getValueAll abgefragt und dann der richtige Wert zurückgesendet
+    22=ELEMENT set value      ->  schreibt einen Wert eines Elements.
+        Wird an das Element übergeben
+        ohne Return informationen wird die Bearbeitung nicht an die Ursprungsstation zurück gemeldet
+
+    31=Logging Daten          ->  wird nur von Masternodes weiterverarbeitet falls diese verbindung zu einem Loggingsystem haben
+
+    KENNUNG + 100 -> Antwort/Rückmeldung auf ein Telegramm
+{
+  "type":01,
+  "elements":[{"name":"NAME"}]
+}
+
+{
+  "type":101,
+  "elements":[{"name":"NAME","quality":QC}]
+}
+
+{
+  "type":02,
+  "elements":[{ #ELEMENT_KOMPLETT# }]
+}
+
+{
+  "type":03/13,
+  "elements":[{ #ELEMENT_TEILWEISE# }]
+}
+
+{
+  "type":102/103/104,
+  "elements":[{"name":"NAME", "quality":QC, "errorpos":X}]
+}
+
+{
+  "type":04/14,
+  "elements":[{"name":"NAME"}]
+}
+
+{
+  "type":104/114,
+  "elements":[{ #ELEMENT_KOMPLETT# }]
+}
+
+{
+  "type":05/15
+}
+
+{
+  "type":105/115,
+  { #STATION_KOMPLETT# }
+}
+
+{
+  "type":21,
+  "elements":[{
+    "name":"NAME",
+    "value":"NAME",
+    "return":{
+      "name":"NAME",
+      "value":"NAME"
+    }]
+  }
+}
+
+{
+  "type":22,
+  "elements":[{
+    "name":"NAME",
+    "value":"NAME",
+    "data":X,
+    "return":{
+      "name":"NAME",
+      "value":"NAME"
+    }]
+  }
+}
+
+{
+  "type":121/122,
+  "returns":[{
+    "name":"NAME",
+    "value":"NAME",
+    "data":X,
+    "quality":QC
+  }]
+}
+
+{
+  "type":31,
+  "elements":[{
+    "name":"NAME",
+    "value":"NAME",
+    "data":X
+  }]
+}
