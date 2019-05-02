@@ -28,15 +28,25 @@
 
 #define JCA_IOT_ELEMENT_MESH_PUT 1
 #define JCA_IOT_ELEMENT_MESH_GET 2
+#define JCA_IOT_ELEMENT_MESH_LOG 3
 
-#define JCA_IOT_ELEMENT_DIR_IN 1
-#define JCA_IOT_ELEMENT_DIR_OUT 2
-#define JCA_IOT_ELEMENT_DIR_INOUT 3
+#define JCA_IOT_ELEMENT_DIR_IN 0x01
+#define JCA_IOT_ELEMENT_DIR_OUT 0x02
+#define JCA_IOT_ELEMENT_DIR_INOUT 0x03
 
 #define JCA_IOT_ELEMENT_RANGE_IO 1
 #define JCA_IOT_ELEMENT_RANGE_FUNC 2
 #define JCA_IOT_ELEMENT_RANGE_MESH 3
 
+#define JCA_IOT_ELEMENT_WRITE_CREAT 0x00
+#define JCA_IOT_ELEMENT_WRITE_UPDATE 0x01
+#define JCA_IOT_ELEMENT_WRITE_PUT 0x02
+
+//Code MAKRO
+#define JCA_IOT_ELEMENT_DIR_IS_IN(wert) ((wert & JCA_IOT_ELEMENT_DIR_IN) == JCA_IOT_ELEMENT_DIR_IN)
+#define JCA_IOT_ELEMENT_DIR_IS_OUT(wert) ((wert & JCA_IOT_ELEMENT_DIR_OUT) == JCA_IOT_ELEMENT_DIR_OUT)
+
+//Inkludes
 #include <vector>
 
 namespace JCA{ namespace IOT{ namespace ELEMENT{
@@ -46,58 +56,84 @@ namespace JCA{ namespace IOT{ namespace ELEMENT{
     int32_t iValue;   //Wert als Ganzzahl
     char Name[JCA_IOT_ELEMENT_NAME_LEN];  //Name des Datenpunkts
     unsigned char Type; //Type -> DEFINE
+    unsigned char Write;
     unsigned char QC;   //Quality-Code -> INCLUDE
   };
 
   //Struktur für die Beschreibung einer Schrnittstelle
   struct tInterface{
     char Name[JCA_IOT_ELEMENT_NAME_LEN];  //Name des Interfaces
-    unsigned char Datatype; //Datentyp -> DEFINE
+    unsigned char Type;     //Datentyp -> DEFINE
     unsigned char Dir;      //Richtung -> DEFINE
-    unsigned char Range;    //Bereich -> Define
-    unsigned char Offset;   //Positin des Werts im Element
-    int16_t Index;          //Index des Elements im Bereich
+    unsigned char Area;     //Bereich -> Define
+    unsigned char Value;    //Positin des Werts im Element
+    bool bValue;
+    float fValue;
+    int32_t iValue;
+    int16_t Element;        //Index des Elements im Bereich
   };
 
   struct tRemote{
     char Station[JCA_IOT_ELEMENT_NAME_LEN];
     char Element[JCA_IOT_ELEMENT_NAME_LEN];
     char Datapoint[JCA_IOT_ELEMENT_NAME_LEN];
-    unsigned char Direction;  //Senden oder Anfragen -> DEFINE
+    unsigned char Dir;        //Senden oder Anfragen -> DEFINE
+    unsigned char Value;      //Wert im Element der gesendet/empfangen Wird
+    unsigned char Interface;  //Interface des Elements das als Trigger dient
+    bool TriggerOld;          //Speicher zur Flankenerkennung
     int32_t Watchdog;         //Laufzeitüberwachung
   };
 
   class cRoot {
   	public:
-  		cSystem(const char* strName, const unsigned char iRange);
+  		cSystem(const JsonObject *data);
+      //liest einen Wert aus anhand des Index im Values-Vector
+      bool getValueBool(const int32_t index, bool *Value);
+      bool getValueInt(const int32_t index, int32_t *Value);
+      bool getValueFloat(const int32_t index, float *Value);
+      bool setValueBool(const int32_t index, const bool Value);
+      bool setValueInt(const int32_t index, const int32_t Value);
+      bool setValueFloat(const int32_t index, const float Value);
+      //Aktuallisiert einen Wert anhand des JsonObects
+      bool setValue(const JsonObject *data);
+      //Gibt alle Werte zurück für die externe Verarbeitung
+      bool getValueAll(JsonArray *data);
+      //Aktuallisiert die Runtimedaten eines Elements, diese gehen
+      //  nach einem Neustart oder neu einlesen der Konfig verlohren
+      bool updateElement(const JsonObject *data);
+      //Gibt den Zustand des Kompletten Elements zurück
+      //  mit allen Vectoren als einzelnes Array im JsonObject
+      bool getElement(JsonArray *data);
+      //Aktuallisiert das komplette Element In-Code-Out-Mesh
+      bool update(std::vector<cRoot*> *IOs,
+        std::vector<cRoot*> *Funcs,
+        std::vector<cRoot*> *Meshs,
+        JsonObject *dataToMesh,
+        int32_t loopTime);
 
     protected:
-  		bool addParam();
-      bool addValue();
-      bool addRemote();
-      bool addInterface();
-      bool setParam(const JsonObject* data);
-      bool getParamAll(JsonArray* data);
-      bool setValue(const JsonObject* data);
-      bool getValueAll(JsonArray* data);
-/*
-  Zugriff aus dem Element erfolgt direkt über den Vector
-  Zugriffe von aussen erfolgen immer über JsonArrays
-
-      float getParamFloat(const int16_t index);
-      int32_t getParamInt(const int16_t index);
-      bool getParamBool(const int16_t index);
-      bool setValueFloat(const int16_t index, const float value);
-      bool setValueInt(const int16_t index, const int32_t value);
-      bool setValueBool(const int16_t index, const bool value);
-      float getValueFloat(const int16_t index);
-      int32_t getValueInt(const int16_t index);
-      bool getValueBool(const int16_t index);
-*/
+      //Konstruktor Funktionen zum erstellen der Elemente
+  		bool addParam(const char* name, const unsigned char dataType);
+      bool addValue(const char* name, const unsigned char dataType);
+      bool addInterface(const char* name, const unsigned char dataType);
+      //Standardfunktion vom verändern der internen Werte,
+      //  wird sowohl vom Konstruktor als auch von der
+      //  Runtime verwendet
+      bool writeData(const JsonObject* data, const unsigned char caller);
+      //Standardfuntkionen zur Runtimebearbeitung
+      bool inInterface(std::vector<cRoot*> *IOs,
+        std::vector<cRoot*> *Funcs,
+        std::vector<cRoot*> *Meshs,);
+      bool outInterface(std::vector<cRoot*> *IOs,
+        std::vector<cRoot*> *Funcs,
+        std::vector<cRoot*> *Meshs,);
+      bool checkRemote(JsonObject* dataToMesh, int32_t loopTime);
+      //Userfunktion, enthält den eigentlichen Code des Elements
+      bool codeElement();
 
       std::vector<tData> Params;
       std::vector<tData> Values;
-      std::vector<tInterface> Interfacess;
+      std::vector<tInterface> Interfaces;
       std::vector<tRemote> Remotes;
 
   };

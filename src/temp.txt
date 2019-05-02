@@ -15,7 +15,7 @@ Aufbau JsonObject eines ELEMENT
   AREA_ID -> 1=IO, 2=Funktion, 3=Mesh-IO
   TYPE_ID -> 101=DI, 102=DO, ..., 201=PID, ..., 301=mDI
   DATA_ID -> 1=Bool, 2=Int, 3=Float
-  ENABLEX -> u=MeshUpdate (von Zentrale), p=MeshPut, sonst nur durch die Konfigurationsdatei (Kombination möglich)
+  ENABLEX -> 1=MeshUpdate (von Zentrale), 2=MeshPut, sonst nur durch die Konfigurationsdatei (Kombination möglich)
   DIRX    -> i=Input, o=Output (Kombination möglich)
 {
   "name" : "NAME",
@@ -30,7 +30,7 @@ Aufbau JsonObject eines ELEMENT
   "interfaces" : [
     { "name":"NAME", "datatype":DATA_ID, "dir":"DIRX", "value":WERT, "area":AREA_ID, "ielement":Y, "ivalue":Y }
   ],
-  "meshs" : [
+  "remotes" : [
     { "name":"NAME", "xstation":"NAME", "xelement":"NAME", "xvalue":"NAME", "dir":"DIRX", "ivalue":X, "iinterface":Y }
   ]
 }

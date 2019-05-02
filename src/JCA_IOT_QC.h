@@ -34,8 +34,9 @@
 									  xxxxxx10	HighLimit	Wert ist am oberen Bereich begrenzt
 									  xxxxxx11	Constant	Wert ist eingefrohren
 */
-#define JCA_IOT_QC_GOOD				0b10000000
-#define JCA_IOT_QC_INIT				0b01111100
+#define JCA_IOT_QC_GOOD		   		0b10000000
+#define JCA_IOT_QC_CREAT				0b01111100
+#define JCA_IOT_QC_INIT				  0b01111101
 #define JCA_IOT_QC_COMMFAULT		0b00011000
 #define JCA_IOT_QC_COMMLAST			0b01010100
 #define JCA_IOT_QC_CONFNAME     0b00000100
